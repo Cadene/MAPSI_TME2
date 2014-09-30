@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
@@ -84,8 +86,8 @@ def Pxy(A,B) :
             tab[i,j]=A[i]*B[j]
     return tab
         
-PA = np.array ( [0.2, 0.7, 0.1] )
-PB = np.array ( [0.4, 0.24, 0.2] )
+PxyA = np.array ( [0.2, 0.7, 0.1] )
+PxyB = np.array ( [0.4, 0.24, 0.2] )
 #print Pxy(PA,PB)        
 
 
@@ -102,7 +104,7 @@ def dessine ( P_jointe ):
     plt.show ()
     
 
-#p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
+P_jointe = Pxy( normale(51,2), proba_affine(51,0.0003) )
 #dessine(p)
 
 
@@ -118,11 +120,13 @@ def project1Var ( P, index ):
     reste = 2**index
     vect = np.zeros ( P.size / 2 )
     for i in range ( P.size ):
-        j = floor ( i / length ) * length / 2 + ( i % reste )
+        j = m.floor ( i / length ) * length / 2 + ( i % reste )
         vect[j] += P[i]
     return vect
 
-   
+proj1_P = np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17])
+#print project1Var( proj1_P, 1)   
+
     
 def project ( P, ind_to_remove ):
     """
@@ -137,6 +141,8 @@ def project ( P, ind_to_remove ):
     for i in range ( ind_to_remove.size - 1, -1, -1 ):
         v = project1Var ( v, ind_to_remove[i] )
     return v
+
+#print project( proj1_P, np.array([1,2]))  
 
 def expanse1Var ( P, index ):
     """
@@ -155,11 +161,13 @@ def expanse1Var ( P, index ):
     reste = 2**index
     vect = np.zeros ( P.size * 2 )
     for i in range ( vect.size ):
-        j = floor ( i / length ) * length / 2 + ( i % reste )
+        j = m.floor ( i / length ) * length / 2 + ( i % reste )
         vect[i] = P[j]
     return vect
-    
-    
+
+#print expanse1Var (np.array([0.2, 0.3, 0.15, 0.35]), 1)    
+   
+
 def expanse ( P, ind_to_add ):
     """
     Expansion d'une probabilité projetée
@@ -184,8 +192,9 @@ def nb_vars ( P ):
     
     
     
+# def proba_conditionnelle(P) :
+#     nb_vars 
     
-#def proba_conditionnelle(P) :
     
     
     
