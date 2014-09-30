@@ -124,8 +124,7 @@ def project1Var ( P, index ):
         vect[j] += P[i]
     return vect
 
-proj1_P = np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17])
-#print project1Var( proj1_P, 1)   
+#print project1Var( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]), 1)   
 
     
 def project ( P, ind_to_remove ):
@@ -192,10 +191,32 @@ def nb_vars ( P ):
     
     
     
-# def proba_conditionnelle(P) :
-#     nb_vars 
+def proba_conditionnelle ( P ) :
+    """
+    P(A|B) = P(A,B) / P(B)
+    P(A|B,C) = P(A,B,C) / P(B,C)
+    Note : La somme n'est pas égale à 1
+    """
+    nb = nb_vars ( P )
+    P_XnlXi = project1Var ( P, nb-1 )
+    P_XnlXi_double = expanse1Var ( P_XnlXi, nb-1 )
+    P_cond = P
+    for ind in range(P.size):
+        P_cond[ind] = P[ind] / P_XnlXi_double[ind]
+    return P_cond
+
+#print proba_conditionnelle ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
-    
-    
+
+def is_indep ( P, index, epsilon = m.exp(-6) ) :
+    P_cond = proba_conditionnelle ( P )
+    P_no_Xi = project1Var ( P, index )
+    P_no_Xi_double = expanse1Var ( P_no_Xi, index )
+    for ind in range ( P.size ) :
+        if ( abs ( P_no_Xi_double[ind] - P[ind] ) > epsilon ) :
+            return False
+    return True
+
+print is_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]), 1)
     
 #p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
