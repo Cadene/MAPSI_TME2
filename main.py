@@ -200,8 +200,11 @@ def proba_conditionnelle ( P ) :
     n = nb_vars ( P ) - 1
     P_XnlXi = project1Var ( P, n )
     P_XnlXi_double = expanse1Var ( P_XnlXi, n )
-    res = P
-    for i in range ( P.size ) :
+    #res = P
+    # L'EGALITE EST UN PUTAIN DE POITEUR EN PYTHON, QUAND TU MODIFIAIS RES, TU MODIFIAIS P
+    # GG SALE MERDE, TU M'AS FAIT PERDRE 2H DE MA VIE
+    res=np.zeros(len(P_XnlXi_double))
+    for i in range ( len(res) ) :
         if P_XnlXi_double[i] != 0 :
             res[i] = P[i] / P_XnlXi_double[i]
         else :
@@ -218,19 +221,71 @@ def is_indep ( P, index, epsilon = m.exp(-6) ) :
     P_no_Xi = project1Var ( P, index )
     P_no_Xi_double = expanse1Var ( P_no_Xi, index )
     P_cond_no_Xi = proba_conditionnelle ( P_no_Xi_double )
-    for ind in range ( P.size ) :
+    for ind in range ( len(P)) :
         if ( abs ( P_cond_no_Xi[ind] - P_cond[ind] ) > epsilon ) :
             return False
     return True
 
 def test_is_indep ():
     P_asia = np.loadtxt ( 'asia_2014.txt' )
-    for i in range ( 0, 7 ) :    
+    for i in range ( 7 ) :    
         print str(i) + " : " + str(is_indep ( P_asia , i ))
-        
-test_is_indep ()
+       
+#test_is_indep ()
 #print is_indep ( np.array([0.25, 0.25, 0.25, 0.25]), 0)
 
 
+def find_indep ( P, epsilon = m.exp(-6) ) :
+
+    n = nb_vars ( P ) - 1
+    
+    isIndep = np.zeros ( n )
+    nbTrue = 0
+    for i in range ( n ) : 
+        isIndep[i] = is_indep ( P, i, epsilon )
+        if isIndep[i] :
+            nbTrue += 1
+     
+    indep_i = np.zeros(nbTrue)
+    ind_indep = 0
+    for i in range(n) :
+        if isIndep[i] :
+            indep_i[ind_indep] = i
+            ind_indep += 1
+    proba_cond = project(P, indep_i)
+    
+    return n, proba_cond, indep_i
+    
+def test_find_indep ():
+    P_asia = np.loadtxt ( 'asia_2014.txt' )   
+    print find_indep ( P_asia )
+
+test_find_indep ()
+
+
+    
+"""   
+    
+def find_indep_mutuelle ( P, epsilon = m.exp(-6) ) :
+    n = nb_vars ( P ) - 1
+    indep = np.zeros ( n )
+    for j in range (n, 0, -1):
+        for i in range (n) :
+            if not (is_indep((P, i))):
+                indep[i] = 1
+        P = project1var(P, j)
+    nbTrue = 0
+    for b in indep :
+        if b :
+            nbTrue += 1
+    indep_i = nb.zeros(nbTrue)
+    ind = 0
+    for i in range(indep.size) :
+        if indep[i] :
+            indep_i[ind] = i
+    """
+            
+    
+            
     
 #p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
