@@ -200,20 +200,37 @@ def proba_conditionnelle ( P ) :
     n = nb_vars ( P ) - 1
     P_XnlXi = project1Var ( P, n )
     P_XnlXi_double = expanse1Var ( P_XnlXi, n )
-    return P / P_XnlXi_double
+    res = P
+    for i in range ( P.size ) :
+        if P_XnlXi_double[i] != 0 :
+            res[i] = P[i] / P_XnlXi_double[i]
+        else :
+            res[i] = float(0)
+    return res
 
 #print proba_conditionnelle ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
 
 def is_indep ( P, index, epsilon = m.exp(-6) ) :
+    if nb_vars ( P ) - 1 == index :
+        raise ValueError ( 'L\indice i d\'une variable Xi doit être différent de n')
     P_cond = proba_conditionnelle ( P )
     P_no_Xi = project1Var ( P, index )
     P_no_Xi_double = expanse1Var ( P_no_Xi, index )
+    P_cond_no_Xi = proba_conditionnelle ( P_no_Xi_double )
     for ind in range ( P.size ) :
-        if ( abs ( P_no_Xi_double[ind] - P[ind] ) > epsilon ) :
+        if ( abs ( P_cond_no_Xi[ind] - P_cond[ind] ) > epsilon ) :
             return False
     return True
 
-print is_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]), 1)
+def test_is_indep ():
+    P_asia = np.loadtxt ( 'asia_2014.txt' )
+    for i in range ( 0, 7 ) :    
+        print str(i) + " : " + str(is_indep ( P_asia , i ))
+        
+test_is_indep ()
+#print is_indep ( np.array([0.25, 0.25, 0.25, 0.25]), 0)
+
+
     
 #p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
