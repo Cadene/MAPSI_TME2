@@ -197,13 +197,10 @@ def proba_conditionnelle ( P ) :
     P(A|B,C) = P(A,B,C) / P(B,C)
     Note : La somme n'est pas égale à 1
     """
-    nb = nb_vars ( P )
-    P_XnlXi = project1Var ( P, nb-1 )
-    P_XnlXi_double = expanse1Var ( P_XnlXi, nb-1 )
-    P_cond = P
-    for ind in range(P.size):
-        P_cond[ind] = P[ind] / P_XnlXi_double[ind]
-    return P_cond
+    n = nb_vars ( P ) - 1
+    P_XnlXi = project1Var ( P, n )
+    P_XnlXi_double = expanse1Var ( P_XnlXi, n )
+    return P / P_XnlXi_double
 
 #print proba_conditionnelle ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
