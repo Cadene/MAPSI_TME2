@@ -274,7 +274,7 @@ def find_all_indep ( P, epsilon = m.exp(-6) ) :
     n = nb_vars ( P ) #nb vars initial used
     size = n - 1
 
-    list_tab_i = [[-1]] #[[-1][n],[n,n-1],...[n,...1]]
+    list_tab_i = [] #[[n],[n,n-1],...[n,...1]]
     for j in range ( size ) :
         tab_i = np.zeros ( j+1, dtype=int ) #because begin at j=0
         for i in range ( 1, j+2 ) : #because (n-1)+2=n+1 excluded
@@ -288,15 +288,9 @@ def find_all_indep ( P, epsilon = m.exp(-6) ) :
     conso_totale = 0 #nb vars (total) used for this new formula
     i = n
     for tab_i in mat_i :
-        if tab_i[0] != -1 :
-            proj_tmp = project ( P, tab_i ) #remove some Xi from formula
-        else :
-            proj_tmp = P
+        proj_tmp = project ( P, tab_i ) #remove some Xi from formula
         indep_nb, indep_tab, indep_var = find_indep ( proj_tmp, epsilon ) #remove other Xi indep
-        if tab_i[0] != -1 :
-            indep_expanse = expanse ( indep_tab, tab_i ) #expanse to resize to same n
-        else :
-            indep_expanse = proj_tmp
+        indep_expanse = expanse ( indep_tab, tab_i ) #expanse to resize to same n
         list_proj.append ( indep_expanse ) #save the result in list
         nb_vars_proj = nb_vars ( proj_tmp )
         nb_vars_cond = nb_vars ( indep_tab ) #same than proj if no Xi indep
@@ -318,6 +312,7 @@ def find_all_indep ( P, epsilon = m.exp(-6) ) :
         P_result *= proj
 
     print P_result
+    print P
 
 find_all_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
