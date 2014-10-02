@@ -236,7 +236,13 @@ def test_is_indep ():
 
 
 def find_indep ( P, epsilon = m.exp(-6) ) :
-
+    """
+    E: P: np.array proba jointe taille n
+    E: epsilon : écart
+    S: n: nb variables dans la proba jointe passée en argument
+    S: proba_cond: proba cond réduisant la taille à n/2
+    S: indep_i: array composé des i des Xi qui constituent la proba cond (!isIndep)
+    """
     n = nb_vars ( P ) - 1
     
     isIndep = np.zeros ( n )
@@ -254,7 +260,7 @@ def find_indep ( P, epsilon = m.exp(-6) ) :
             ind_indep += 1
     proba_cond = project(P, indep_i)
     
-    return n, proba_cond, indep_i
+    return n, proba_cond, indep_i.astype(int)
     
 def test_find_indep ():
     P_asia = np.loadtxt ( 'asia_2014.txt' )   
@@ -263,29 +269,37 @@ def test_find_indep ():
 test_find_indep ()
 
 
+# def find_all_indep ( P, epsilon = m.exp(-6) ) :
+#     n = nb_vars ( P )
+#     size = n - 1
+#     mat_i = np.zeros ( size ) #[[1],[1,2],[1,2,3],...[...,n]]
+#     for j in range ( n ) :
+#         tab_i = np.zeros ( j+1 ) #because begin at j=0
+#         for i in range ( 1, j+2 ) : #because (n-1)+2=n+1 excluded
+#             tab_i[i-1] = i
+#         mat_i[j] = tab_i
+#     print mat_i
+
+# find_all_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
-"""   
-    
-def find_indep_mutuelle ( P, epsilon = m.exp(-6) ) :
-    n = nb_vars ( P ) - 1
-    indep = np.zeros ( n )
-    for j in range (n, 0, -1):
-        for i in range (n) :
-            if not (is_indep((P, i))):
-                indep[i] = 1
-        P = project1var(P, j)
-    nbTrue = 0
-    for b in indep :
-        if b :
-            nbTrue += 1
-    indep_i = nb.zeros(nbTrue)
-    ind = 0
-    for i in range(indep.size) :
-        if indep[i] :
-            indep_i[ind] = i
-    """
+# def find_indep_mutuelle ( P, epsilon = m.exp(-6) ) :
+#     n = nb_vars ( P ) - 1
+#     indep = np.zeros ( n )
+#     for j in range (n, 0, -1):
+#         for i in range (n) :
+#             if not (is_indep((P, i))):
+#                 indep[i] = 1
+#         P = project1var(P, j)
+#     nbTrue = 0
+#     for b in indep :
+#         if b :
+#             nbTrue += 1
+#     indep_i = nb.zeros(nbTrue)
+#     ind = 0
+#     for i in range(indep.size) :
+#         if indep[i] :
+#             indep_i[ind] = i
+
             
-    
-            
-    
+
 #p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
