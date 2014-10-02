@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
@@ -84,8 +86,8 @@ def Pxy(A,B) :
             tab[i,j]=A[i]*B[j]
     return tab
         
-PA = np.array ( [0.2, 0.7, 0.1] )
-PB = np.array ( [0.4, 0.24, 0.2] )
+PxyA = np.array ( [0.2, 0.7, 0.1] )
+PxyB = np.array ( [0.4, 0.24, 0.2] )
 #print Pxy(PA,PB)        
 
 
@@ -102,7 +104,7 @@ def dessine ( P_jointe ):
     plt.show ()
     
 
-#p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
+P_jointe = Pxy( normale(51,2), proba_affine(51,0.0003) )
 #dessine(p)
 
 
@@ -118,11 +120,12 @@ def project1Var ( P, index ):
     reste = 2**index
     vect = np.zeros ( P.size / 2 )
     for i in range ( P.size ):
-        j = floor ( i / length ) * length / 2 + ( i % reste )
+        j = m.floor ( i / length ) * length / 2 + ( i % reste )
         vect[j] += P[i]
     return vect
 
-   
+#print project1Var( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]), 1)   
+
     
 def project ( P, ind_to_remove ):
     """
@@ -137,6 +140,8 @@ def project ( P, ind_to_remove ):
     for i in range ( ind_to_remove.size - 1, -1, -1 ):
         v = project1Var ( v, ind_to_remove[i] )
     return v
+
+#print project( proj1_P, np.array([1,2]))  
 
 def expanse1Var ( P, index ):
     """
@@ -155,11 +160,13 @@ def expanse1Var ( P, index ):
     reste = 2**index
     vect = np.zeros ( P.size * 2 )
     for i in range ( vect.size ):
-        j = floor ( i / length ) * length / 2 + ( i % reste )
+        j = m.floor ( i / length ) * length / 2 + ( i % reste )
         vect[i] = P[j]
     return vect
-    
-    
+
+#print expanse1Var (np.array([0.2, 0.3, 0.15, 0.35]), 1)    
+   
+
 def expanse ( P, ind_to_add ):
     """
     Expansion d'une probabilité projetée
@@ -184,9 +191,115 @@ def nb_vars ( P ):
     
     
     
+def proba_conditionnelle ( P ) :
+    """
+    P(A|B) = P(A,B) / P(B)
+    P(A|B,C) = P(A,B,C) / P(B,C)
+    Note : La somme n'est pas égale à 1
+    """
+    n = nb_vars ( P ) - 1
+    P_XnlXi = project1Var ( P, n )
+    P_XnlXi_double = expanse1Var ( P_XnlXi, n )
+    #res = P
+    # L'EGALITE EST UN PUTAIN DE POITEUR EN PYTHON, QUAND TU MODIFIAIS RES, TU MODIFIAIS P
+    # GG SALE MERDE, TU M'AS FAIT PERDRE 2H DE MA VIE
+    res=np.zeros(len(P_XnlXi_double))
+    for i in range ( len(res) ) :
+        if P_XnlXi_double[i] != 0 :
+            res[i] = P[i] / P_XnlXi_double[i]
+        else :
+            res[i] = float(0)
+    return res
+
+#print proba_conditionnelle ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
-#def proba_conditionnelle(P) :
+
+def is_indep ( P, index, epsilon = m.exp(-6) ) :
+    if nb_vars ( P ) - 1 == index :
+        raise ValueError ( 'L\indice i d\'une variable Xi doit être différent de n')
+    P_cond = proba_conditionnelle ( P )
+    P_no_Xi = project1Var ( P, index )
+    P_no_Xi_double = expanse1Var ( P_no_Xi, index )
+    P_cond_no_Xi = proba_conditionnelle ( P_no_Xi_double )
+    for ind in range ( len(P)) :
+        if ( abs ( P_cond_no_Xi[ind] - P_cond[ind] ) > epsilon ) :
+            return False
+    return True
+
+def test_is_indep ():
+    P_asia = np.loadtxt ( 'asia_2014.txt' )
+    for i in range ( 7 ) :    
+        print str(i) + " : " + str(is_indep ( P_asia , i ))
+       
+#test_is_indep ()
+#print is_indep ( np.array([0.25, 0.25, 0.25, 0.25]), 0)
+
+
+def find_indep ( P, epsilon = m.exp(-6) ) :
+    """
+    E: P: np.array proba jointe taille n
+    E: epsilon : écart
+    S: n: nb variables dans la proba jointe passée en argument
+    S: proba_cond: proba cond réduisant la taille à n/2
+    S: indep_i: array composé des i des Xi qui constituent la proba cond (!isIndep)
+    """
+    n = nb_vars ( P ) - 1
     
+    isIndep = np.zeros ( n )
+    nbTrue = 0
+    for i in range ( n ) : 
+        isIndep[i] = is_indep ( P, i, epsilon )
+        if isIndep[i] :
+            nbTrue += 1
+     
+    indep_i = np.zeros(nbTrue)
+    ind_indep = 0
+    for i in range(n) :
+        if isIndep[i] :
+            indep_i[ind_indep] = i
+            ind_indep += 1
+    proba_cond = project(P, indep_i)
     
+    return n, proba_cond, indep_i.astype(int)
     
+def test_find_indep ():
+    P_asia = np.loadtxt ( 'asia_2014.txt' )   
+    print find_indep ( P_asia )
+
+test_find_indep ()
+
+
+# def find_all_indep ( P, epsilon = m.exp(-6) ) :
+#     n = nb_vars ( P )
+#     size = n - 1
+#     mat_i = np.zeros ( size ) #[[1],[1,2],[1,2,3],...[...,n]]
+#     for j in range ( n ) :
+#         tab_i = np.zeros ( j+1 ) #because begin at j=0
+#         for i in range ( 1, j+2 ) : #because (n-1)+2=n+1 excluded
+#             tab_i[i-1] = i
+#         mat_i[j] = tab_i
+#     print mat_i
+
+# find_all_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
+    
+# def find_indep_mutuelle ( P, epsilon = m.exp(-6) ) :
+#     n = nb_vars ( P ) - 1
+#     indep = np.zeros ( n )
+#     for j in range (n, 0, -1):
+#         for i in range (n) :
+#             if not (is_indep((P, i))):
+#                 indep[i] = 1
+#         P = project1var(P, j)
+#     nbTrue = 0
+#     for b in indep :
+#         if b :
+#             nbTrue += 1
+#     indep_i = nb.zeros(nbTrue)
+#     ind = 0
+#     for i in range(indep.size) :
+#         if indep[i] :
+#             indep_i[ind] = i
+
+            
+
 #p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
