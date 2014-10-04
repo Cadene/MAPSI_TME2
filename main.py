@@ -266,74 +266,66 @@ def test_find_indep ():
     P_asia = np.loadtxt ( 'asia_2014.txt' )   
     print find_indep ( P_asia )
 
-test_find_indep ()
+#test_find_indep ()
 
 
 def find_all_indep ( P, epsilon = m.exp(-6) ) :
-
-    n = nb_vars ( P ) #nb vars initial used
-    size = n - 1
-
-    list_tab_i = [] #[[n],[n,n-1],...[n,...1]]
-    for j in range ( size ) :
+ 
+    nb_v = nb_vars ( P ) #nb vars initial used
+    n = nb_v - 1
+ 
+    list_tab_i = [[]] #[[n],[n,n-1],...[n,...1]]
+    for j in range ( n ) :
         tab_i = np.zeros ( j+1, dtype=int ) #because begin at j=0
         for i in range ( 1, j+2 ) : #because (n-1)+2=n+1 excluded
-            tab_i[i-1] = n-i
+            tab_i[i-1] = nb_v - i
         list_tab_i.append(tab_i)
     mat_i = np.array(list_tab_i)
-
-    print mat_i
-
-    list_proj = []
+ 
+    string = 'mat_i: ' + str(mat_i) + '\n'
+ 
+    list_cond = []
     conso_totale = 0 #nb vars (total) used for this new formula
     i = n
     for tab_i in mat_i :
-        proj_tmp = project ( P, tab_i ) #remove some Xi from formula
-        indep_nb, indep_tab, indep_var = find_indep ( proj_tmp, epsilon ) #remove other Xi indep
-        indep_expanse = expanse ( indep_tab, tab_i ) #expanse to resize to same n
-        list_proj.append ( indep_expanse ) #save the result in list
-        nb_vars_proj = nb_vars ( proj_tmp )
-        nb_vars_cond = nb_vars ( indep_tab ) #same than proj if no Xi indep
-        string = 'i: ' + str ( i )
-        string += '         nb_vars_proj: ' + str ( nb_vars_proj )
-        string += '         nb_vars_cond: ' + str ( nb_vars_cond )
-        string += '         tab_i: ' + str(tab_i)
-        print string
-        conso_totale += nb_vars_cond
-        i -= 1
+        
+        if i == n :
+            cond_tmp = np.copy(proba_conditionnelle (P))
+            nb_v_distrib = nb_v
+            
+        else :
+            proj_tmp = project ( P, tab_i )
+            nb_v_distrib = i+1
+            cond_tmp = np.copy(proba_conditionnelle ( proj_tmp ))
+            
+        indep_nb, indep_tab, indep_var = find_indep ( cond_tmp, epsilon ) 
+        nb_v_compact = nb_vars ( indep_tab ) 
+        conso_totale += nb_v_compact
+        
+        cond = expanse ( indep_tab, tab_i )
+        
+        list_cond.append ( cond ) 
 
-    string = 'conso_finale: ' + str ( conso_totale )
-    string += '        conso_initiale: ' + str ( n )
+        string += 'i: ' + str ( i ) + '\n'
+        string += ' :nb_v_distrib: ' + str ( nb_v_distrib ) + '\n'
+        string += ' :nb_v_compact: ' + str ( nb_v_compact ) + '\n'
+        string += ' :cond:  ' + str(cond) + '\n'     
+        string += ' :tab_i: ' + str(tab_i) + '\n'
+        i -= 1
+        
+    P_result = np.ones ( P.size )
+    for cond in list_cond :
+        P_result *= cond
+ 
+    string += 'P_result: ' + str(P_result) + '\n'
+    string += 'P       : ' + str(P) + '\n'
+    string += 'sum P_res: ' + str(sum(P_result)) + '\n'
+    string += 'sum P    : ' + str(sum(P)) + '\n'
+    string += 'conso P: ' + str(nb_v) + '\n'
+    string += 'conso compact: ' + str(conso_totale)
+
     print string
 
-    P_result = np.ones ( P.size )
-    for proj in list_proj :
-        print proj
-        P_result *= proj
-
-    print P_result
-    print P
 
 find_all_indep ( np.array([0.05, 0.1, 0.15, 0.2, 0.02, 0.18, 0.13, 0.17]) )
     
-# def find_indep_mutuelle ( P, epsilon = m.exp(-6) ) :
-#     n = nb_vars ( P ) - 1
-#     indep = np.zeros ( n )
-#     for j in range (n, 0, -1):
-#         for i in range (n) :
-#             if not (is_indep((P, i))):
-#                 indep[i] = 1
-#         P = project1var(P, j)
-#     nbTrue = 0
-#     for b in indep :
-#         if b :
-#             nbTrue += 1
-#     indep_i = nb.zeros(nbTrue)
-#     ind = 0
-#     for i in range(indep.size) :
-#         if indep[i] :
-#             indep_i[ind] = i
-
-            
-
-#p=Pxy(normale(51,2),proba_affine(51,0.0003 ))
